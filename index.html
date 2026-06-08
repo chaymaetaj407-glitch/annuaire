@@ -1,1 +1,1459 @@
-PLACEHOLDER_WILL_FAIL
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Annuaire FR — France Routage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://unpkg.com/alpinejs@3.13.5/dist/cdn.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Inter',sans-serif;font-size:13px;color:#18181b;background:#f4f4f5}
+button{font-family:'Inter',sans-serif;cursor:pointer}
+input,select{font-family:'Inter',sans-serif}
+
+/* ── PILLS ── */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:500;border-width:1px;border-style:solid}
+.pill-red{background:#fef2f2;color:#b91c1c;border-color:#fecaca}
+.pill-green{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}
+.pill-blue{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+.pill-orange{background:#fff7ed;color:#c2410c;border-color:#fed7aa}
+.pill-zinc{background:#f4f4f5;color:#52525b;border-color:#e4e4e7}
+.pill-amber{background:#fffbeb;color:#92400e;border-color:#fde68a}
+
+/* ── CARD ── */
+.card{background:white;border:1px solid #e4e4e7;border-radius:0.75rem;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
+
+/* ── KPI ── */
+.kpi-card{background:white;border:1px solid #e4e4e7;border-radius:0.75rem;padding:1rem}
+.kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#71717a;font-weight:500}
+.kpi-value{font-size:1.5rem;font-weight:600;color:#18181b;margin-top:6px}
+
+/* ── SIDEBAR FILTER BUTTONS ── */
+.sf-btn{padding:3px 10px;border-radius:20px;border:1px solid #e4e4e7;background:#f4f4f5;font-size:11px;color:#71717a;transition:all .12s;font-weight:500;cursor:pointer}
+.sf-btn:hover{border-color:#3f3f46;color:#3f3f46;background:#e4e4e7}
+.sf-btn.active{background:#18181b;border-color:#18181b;color:white}
+.sf-btn.red.active{background:#dc2626;border-color:#dc2626;color:white}
+.sf-btn.green.active{background:#16a34a;border-color:#16a34a;color:white}
+
+/* ── CLIENT ROWS ── */
+.client-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #f4f4f5;cursor:pointer;transition:all .12s;position:relative}
+.client-row:hover{background:#f9f9f9}
+.client-row.selected{background:#eff6ff;border-left:3px solid #2563eb;padding-left:11px}
+.client-row.selected .client-name{color:#1d4ed8}
+
+/* ── TABS ── */
+#tabs{display:flex;gap:0;padding:0 20px;background:white;border-bottom:1px solid #e4e4e7;flex-shrink:0}
+.tab{padding:10px 16px;font-size:13px;font-weight:500;color:#71717a;border-bottom:2px solid transparent;cursor:pointer;transition:all .15s;white-space:nowrap}
+.tab:hover{color:#18181b}
+.tab.active{color:#18181b;border-bottom-color:#18181b;font-weight:600}
+
+/* ── SECTION (card wrapper) ── */
+.section{background:white;border:1px solid #e4e4e7;border-radius:0.75rem;overflow:hidden;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.section-head{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid #f4f4f5;background:#fafafa}
+.section-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;color:#3f3f46}
+.section-pill{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 8px;border-radius:20px;background:#f4f4f5;color:#71717a;border:1px solid #e4e4e7}
+
+/* ── EVO TABLE ── */
+.evo-table{width:100%;border-collapse:collapse}
+.evo-table th{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#71717a;font-weight:500;padding:8px 12px;text-align:left;border-bottom:1px solid #e4e4e7;background:#fafafa;cursor:pointer;white-space:nowrap;user-select:none}
+.evo-table th:hover{color:#18181b}
+.evo-table th .sort-icon{margin-left:4px;opacity:.4}
+.evo-table th.sorted .sort-icon{opacity:1;color:#18181b}
+.evo-table td{padding:8px 12px;border-bottom:1px solid #f4f4f5;font-size:12px;vertical-align:middle}
+.evo-table tr:last-child td{border-bottom:none}
+.evo-table tr:hover td{background:#fafafa}
+.evo-table td.mono{font-family:'JetBrains Mono',monospace}
+
+/* ── EVO BADGES ── */
+.evo-up{color:#15803d;font-weight:600}
+.evo-down{color:#b91c1c;font-weight:600}
+.evo-stable{color:#71717a}
+.alert-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:6px;font-size:10px;font-weight:500;border:1px solid}
+.alert-ok{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}
+.alert-warn{background:#fff7ed;color:#c2410c;border-color:#fed7aa}
+.alert-err{background:#fef2f2;color:#b91c1c;border-color:#fecaca}
+
+/* ── PAGINATION ── */
+.pagination{display:flex;align-items:center;gap:6px;padding:10px 14px;border-top:1px solid #e4e4e7;justify-content:flex-end}
+.page-btn{width:28px;height:28px;border-radius:6px;border:1px solid #e4e4e7;background:white;font-size:12px;color:#3f3f46;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .12s}
+.page-btn:hover{border-color:#18181b;color:#18181b}
+.page-btn.active{background:#18181b;border-color:#18181b;color:#fff}
+.page-info{font-family:'JetBrains Mono',monospace;font-size:11px;color:#71717a;margin-right:8px}
+
+/* ── STATS GRID ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.stat-card{background:white;border:1px solid #e4e4e7;border-radius:0.75rem;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.04);text-align:center}
+.stat-card .sv{font-size:28px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.stat-card .sl{font-size:11px;color:#71717a;margin-top:4px}
+.stat-card.blue .sv{color:#1d4ed8}
+.stat-card.green .sv{color:#15803d}
+.stat-card.red .sv{color:#b91c1c}
+.stat-card.orange .sv{color:#c2410c}
+
+/* ── INFO GRID ── */
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.info-card{background:white;border:1px solid #e4e4e7;border-radius:0.75rem;padding:12px 14px;box-shadow:0 1px 2px rgba(0,0,0,.04);transition:box-shadow .15s}
+.info-card:hover{box-shadow:0 3px 8px rgba(0,0,0,.08)}
+.info-card.full{grid-column:1/-1}
+.info-card.half{grid-column:span 2}
+.info-card .ic-label{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#71717a;margin-bottom:4px}
+.info-card .ic-value{font-size:13px;color:#18181b;word-break:break-all;font-weight:500}
+.info-card .ic-value a{color:#1d4ed8;text-decoration:none}
+.info-card .ic-value a:hover{text-decoration:underline}
+.info-card .ic-value.mono{font-family:'JetBrains Mono',monospace}
+.info-card .ic-value.blue{color:#1d4ed8}
+.ic-input{width:100%;border:1px solid #2563eb;border-radius:6px;padding:3px 6px;font-size:13px;font-family:'JetBrains Mono',monospace;outline:none;margin-top:2px}
+
+/* ── SUIVI BUTTONS ── */
+.suivi-row{display:flex;gap:8px;margin-bottom:14px}
+.suivi-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;border:1px solid #e4e4e7;background:white;font-size:12px;font-weight:500;color:#71717a;transition:all .15s;cursor:pointer}
+.suivi-btn:hover{border-color:#a1a1aa;color:#3f3f46}
+.suivi-btn.t{border-color:#bbf7d0;color:#15803d;background:#f0fdf4}
+.suivi-btn.c{border-color:#bfdbfe;color:#1d4ed8;background:#eff6ff}
+.suivi-btn.r{border-color:#fecaca;color:#b91c1c;background:#fef2f2}
+.sb-box{width:13px;height:13px;border:1.5px solid currentColor;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px}
+
+/* ── EVO TOOLBAR ── */
+.evo-toolbar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #e4e4e7;flex-wrap:wrap}
+.evo-search{background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;padding:5px 10px;font-size:12px;color:#18181b;outline:none;width:180px}
+.evo-search:focus{border-color:#3f3f46;background:white}
+.evo-select{background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;padding:5px 8px;font-size:12px;color:#18181b;outline:none}
+.evo-btn{padding:4px 10px;border-radius:6px;border:1px solid #e4e4e7;background:white;font-size:11px;color:#71717a;cursor:pointer;transition:all .12s}
+.evo-btn:hover{border-color:#18181b;color:#18181b}
+.evo-btn.active{background:#f4f4f5;border-color:#a1a1aa;color:#18181b}
+
+/* ── FILTER PANEL ── */
+#filter-panel{background:white;border-bottom:1px solid #e4e4e7;padding:10px 20px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.fp-group{display:flex;flex-direction:column;gap:3px}
+.fp-label{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#71717a;font-weight:600}
+.fp-select{background:white;border:1px solid #e4e4e7;border-radius:6px;padding:5px 8px;font-size:11px;color:#18181b;outline:none;transition:border-color .15s;font-weight:500}
+.fp-select:focus{border-color:#3f3f46}
+.fp-date{background:white;border:1px solid #e4e4e7;border-radius:6px;padding:5px 8px;font-size:11px;font-family:'JetBrains Mono',monospace;color:#18181b;outline:none;width:130px;transition:border-color .15s}
+.fp-date:focus{border-color:#3f3f46}
+.fp-shortcuts{display:flex;gap:4px}
+.fp-shortcut{padding:4px 9px;border-radius:6px;border:1px solid #e4e4e7;background:white;font-size:10px;color:#71717a;font-weight:500;cursor:pointer;transition:all .12s}
+.fp-shortcut:hover{border-color:#3f3f46;color:#18181b}
+
+/* ── EMPTY ── */
+#empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#71717a;gap:10px;padding:40px}
+#empty svg{opacity:.2}
+#empty p{font-family:'JetBrains Mono',monospace;font-size:12px}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#d4d4d8;border-radius:3px}
+
+/* ── LOADING ── */
+#loading{position:fixed;inset:0;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:999}
+#loading .sp{width:32px;height:32px;border:2px solid #e4e4e7;border-top-color:#3f3f46;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── EDIT MODAL ── */
+#edit-modal{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:500;display:none;align-items:center;justify-content:center}
+#edit-modal.open{display:flex}
+#edit-box{background:white;border-radius:0.75rem;padding:24px;width:420px;box-shadow:0 8px 32px rgba(0,0,0,.12);border:1px solid #e4e4e7}
+#edit-box h3{font-size:15px;font-weight:600;margin-bottom:16px;color:#18181b}
+.edit-field{margin-bottom:12px}
+.edit-field label{display:block;font-size:11px;font-weight:500;color:#71717a;margin-bottom:4px;font-family:'JetBrains Mono',monospace;text-transform:uppercase}
+.edit-field input{width:100%;border:1px solid #e4e4e7;border-radius:6px;padding:7px 10px;font-size:13px;color:#18181b;outline:none;background:#fafafa}
+.edit-field input:focus{border-color:#3f3f46;background:white}
+.edit-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+
+/* ── ACTION BUTTONS ── */
+.action-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;border:1px solid #e4e4e7;background:white;color:#3f3f46;font-size:12px;font-weight:500;transition:all .15s;cursor:pointer}
+.action-btn:hover{border-color:#3f3f46;color:#18181b;background:#fafafa}
+.action-btn.primary{background:#18181b;color:white;border-color:#18181b}
+.action-btn.primary:hover{background:#27272a}
+.action-btn.danger{border-color:#fecaca;color:#b91c1c;background:#fef2f2}
+.action-btn.danger:hover{background:#fee2e2}
+
+/* ── FICHE HEADER ── */
+.fiche-nom{font-size:20px;font-weight:700;color:#18181b}
+.fiche-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:#71717a;margin-top:3px}
+.sommeil-alert{display:inline-flex;align-items:center;gap:5px;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:500;margin-top:6px}
+
+/* ── SIDEBAR NAV LINK (actions) ── */
+.nav-action{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;font-size:12px;font-weight:500;color:#52525b;transition:all .12s;cursor:pointer;border:none;background:transparent;width:100%;text-align:left}
+.nav-action:hover{background:#f4f4f5;color:#18181b}
+
+/* ── FICHE ── */
+.chip{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:500}
+.chip-ca{background:#f0fdf4;color:#15803d}
+.chip-sommeil{background:#fef2f2;color:#b91c1c}
+.chip-traite{background:#f0fdf4;color:#15803d}
+.chip-contacte{background:#eff6ff;color:#1d4ed8}
+.chip-relancer{background:#fef2f2;color:#b91c1c}
+
+#app{display:flex;height:100vh;overflow:hidden}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#f4f4f5}
+#content{flex:1;overflow-y:auto;padding:20px}
+</style>
+</head>
+<body class="bg-zinc-50 text-zinc-900"
+      x-data="{ collapsed: localStorage.getItem('sidebarCollapsed') === '1' }"
+      x-init="$watch('collapsed', v => localStorage.setItem('sidebarCollapsed', v ? '1' : '0'))">
+
+<div id="loading"><div class="sp"></div><p style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#71717a">Chargement…</p></div>
+
+<div id="app">
+  <!-- SIDEBAR -->
+  <aside class="sticky top-0 h-screen shrink-0 bg-white border-r border-zinc-200 flex flex-col transition-all duration-200 overflow-hidden"
+         :class="collapsed ? 'w-16' : 'w-72'">
+
+    <!-- Logo + collapse button -->
+    <div class="border-b border-zinc-100 py-4 flex items-center shrink-0"
+         :class="collapsed ? 'justify-center' : 'justify-between px-3'">
+      <div x-show="!collapsed" class="flex items-center gap-2.5 pl-2">
+        <div class="w-8 h-8 rounded-lg bg-zinc-900 text-white flex items-center justify-center font-bold text-sm shrink-0">FR</div>
+        <div>
+          <div class="text-sm font-semibold text-zinc-900 whitespace-nowrap">Annuaire</div>
+          <div class="text-[11px] text-zinc-500 whitespace-nowrap">France Routage</div>
+        </div>
+      </div>
+      <button x-show="!collapsed" @click="collapsed = true" class="text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded p-1 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <button x-show="collapsed" @click="collapsed = false" class="w-8 h-8 rounded-lg bg-zinc-900 text-white flex items-center justify-center font-bold text-sm hover:bg-zinc-700 transition">FR</button>
+    </div>
+
+    <!-- Nav content (only when not collapsed) -->
+    <div x-show="!collapsed" class="flex flex-col flex-1 overflow-hidden">
+      <!-- Search -->
+      <div class="px-3 pt-3 pb-2 border-b border-zinc-100 shrink-0">
+        <div class="relative">
+          <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input id="sidebar-search" placeholder="Rechercher…" oninput="renderSidebar()"
+            class="w-full bg-zinc-50 border border-zinc-200 rounded-lg py-1.5 pl-8 pr-3 text-xs text-zinc-800 outline-none focus:border-zinc-400 focus:bg-white transition placeholder-zinc-400">
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="px-3 py-2 border-b border-zinc-100 shrink-0">
+        <div class="text-[9px] font-semibold uppercase tracking-widest text-zinc-400 mb-2">Filtrer par</div>
+        <div id="sidebar-filters" class="flex flex-wrap gap-1">
+          <button class="sf-btn active" data-sf="all" onclick="setSF(this,'all')">Tous</button>
+          <button class="sf-btn green" data-sf="actif" onclick="setSF(this,'actif')">✓ Actifs</button>
+          <button class="sf-btn red" data-sf="sommeil" onclick="setSF(this,'sommeil')">💤 Sommeil</button>
+          <button class="sf-btn" data-sf="ca" onclick="setSF(this,'ca')">💰 CA</button>
+          <button class="sf-btn" data-sf="doublon" onclick="setSF(this,'doublon')">⊕ Doublons</button>
+          <button class="sf-btn red" data-sf="anomalie" onclick="setSF(this,'anomalie')">⚠ Anomalies</button>
+        </div>
+      </div>
+
+      <!-- Legend + count -->
+      <div class="flex items-center justify-between px-3 py-1.5 border-b border-zinc-100 shrink-0">
+        <div class="flex gap-3 text-[10px] text-zinc-400">
+          <span><span class="text-blue-500">▶</span> Actif</span>
+          <span><span class="text-red-400">▶</span> Sommeil</span>
+          <span><span class="text-amber-400">▶</span> Alerte</span>
+        </div>
+        <div class="font-mono text-[11px] font-semibold text-zinc-700"><strong id="sb-count">—</strong></div>
+      </div>
+
+      <!-- Client list -->
+      <div id="sidebar-list" class="flex-1 overflow-y-auto"></div>
+
+      <!-- Action buttons -->
+      <div class="border-t border-zinc-100 px-2 py-2 shrink-0 space-y-0.5">
+        <button class="nav-action" onclick="exportExcel()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export Excel
+        </button>
+        <button class="nav-action" id="btn-verif-all" onclick="verifierTousINSEE()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Vérifier tous INSEE
+        </button>
+        <button class="nav-action" onclick="exportAnomalies()" style="color:#b91c1c">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Export anomalies
+        </button>
+        <div id="verif-progress" style="display:none;font-family:'JetBrains Mono',monospace;font-size:10px;color:#52525b;padding:4px 10px"></div>
+      </div>
+
+      <!-- Meta info -->
+      <div class="px-4 py-2.5 border-t border-zinc-100 text-[11px] text-zinc-400 shrink-0">
+        <span id="meta-n" class="font-semibold text-zinc-600">—</span> clients · <span id="meta-date">—</span>
+      </div>
+    </div>
+
+    <!-- Collapsed: icon buttons -->
+    <div x-show="collapsed" class="flex flex-col flex-1 items-center py-3 gap-2">
+      <button onclick="exportExcel()" title="Export Excel" class="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 transition">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+      <button onclick="verifierTousINSEE()" title="Vérifier tous" id="btn-verif-all-collapsed" class="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 transition">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div id="main" class="flex-1 min-w-0 flex flex-col overflow-hidden">
+
+    <!-- FILTRES AVANCÉS -->
+    <div id="filter-panel">
+
+      <div class="fp-group">
+        <span class="fp-label">Titre</span>
+        <select class="fp-select" id="fp-titre" onchange="applyFilters()">
+          <option value="">Tous les titres</option>
+        </select>
+      </div>
+
+      <div style="width:1px;height:32px;background:#e4e4e7;align-self:flex-end;margin:0 2px"></div>
+
+      <div class="fp-group">
+        <span class="fp-label">Service</span>
+        <select class="fp-select" id="fp-presta" onchange="applyFilters()">
+          <option value="">Tous les services</option>
+        </select>
+      </div>
+
+      <div class="fp-group">
+        <span class="fp-label">Statut</span>
+        <select class="fp-select" id="fp-statut" onchange="applyFilters()">
+          <option value="">Tous</option>
+          <option value="actif">✅ Actifs</option>
+          <option value="sommeil">💤 En sommeil</option>
+          <option value="avec-ca">💰 Avec CA</option>
+        </select>
+      </div>
+
+      <div class="fp-group">
+        <span class="fp-label">Qualité</span>
+        <select class="fp-select" id="fp-qualite" onchange="applyFilters()">
+          <option value="">Toutes</option>
+          <option value="complet">✅ Complet (≥80%)</option>
+          <option value="partiel">⚠️ Partiel (40-80%)</option>
+          <option value="incomplet">❌ Incomplet (&lt;40%)</option>
+        </select>
+      </div>
+
+      <div class="fp-group">
+        <span class="fp-label">Données manquantes</span>
+        <select class="fp-select" id="fp-manquant" onchange="applyFilters()">
+          <option value="">Aucun filtre</option>
+          <option value="sans-email">📧 Sans email</option>
+          <option value="sans-tel">📞 Sans téléphone</option>
+          <option value="sans-siret">🏢 Sans SIRET</option>
+          <option value="sans-tva">💶 Sans TVA</option>
+        </select>
+      </div>
+
+      <div style="width:1px;height:32px;background:#e4e4e7;align-self:flex-end;margin:0 2px"></div>
+
+      <div class="fp-group">
+        <span class="fp-label">Période CA</span>
+        <div style="display:flex;gap:5px;align-items:center">
+          <input type="date" class="fp-date" id="fp-date-from" onchange="applyFilters()">
+          <span style="font-size:12px;color:#a1a1aa">→</span>
+          <input type="date" class="fp-date" id="fp-date-to" onchange="applyFilters()">
+        </div>
+      </div>
+
+      <div class="fp-group">
+        <span class="fp-label">Pays / Zone</span>
+        <select class="fp-select" id="fp-pays" onchange="applyFilters()">
+          <option value="">Tous les pays</option>
+          <option value="france">🇫🇷 France</option>
+          <option value="ue">🇪🇺 Union Européenne</option>
+          <option value="hors-ue">🌍 Hors UE</option>
+        </select>
+      </div>
+
+      <div class="fp-group">
+        <span class="fp-label">Raccourcis</span>
+        <div class="fp-shortcuts">
+          <button class="fp-shortcut" onclick="setDateShortcut('today')">Auj.</button>
+          <button class="fp-shortcut" onclick="setDateShortcut('week')">Sem.</button>
+          <button class="fp-shortcut" onclick="setDateShortcut('month')">Mois</button>
+          <button class="fp-shortcut" onclick="setDateShortcut('year')">Année</button>
+          <button onclick="clearFilters()" style="padding:4px 9px;border-radius:6px;border:1px solid #fecaca;background:#fef2f2;font-size:10px;color:#b91c1c;font-weight:600;cursor:pointer">✕</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TABS -->
+    <div id="tabs">
+      <div class="tab active" data-tab="fiche" onclick="switchTab('fiche')">Fiche client</div>
+      <div class="tab" data-tab="evolution" onclick="switchTab('evolution')">📈 Évolution</div>
+      <div class="tab" data-tab="stats" onclick="switchTab('stats')">📊 Statistiques</div>
+    </div>
+
+    <div id="content">
+      <div id="empty">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <p>Sélectionnez un client dans la liste</p>
+      </div>
+      <div id="tab-fiche" style="display:none"></div>
+      <div id="tab-evolution" style="display:none"></div>
+      <div id="tab-stats" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITION -->
+<div id="edit-modal">
+  <div id="edit-box">
+    <h3 id="edit-title">Modifier les informations</h3>
+    <div id="edit-fields"></div>
+    <div class="edit-actions">
+      <button class="action-btn" onclick="closeEdit()">Annuler</button>
+      <button class="action-btn primary" onclick="saveEdit()">💾 Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ DONNÉES & ÉTAT ═══════════════════════════════════════
+let ALL=[], EDITS={}, SUIVI={}, selectedId=null, currentTab='fiche';
+let sfFilter='all', filterState={titre:'',presta:'',statut:'',qualite:'',manquant:'',dateFrom:'',dateTo:'',pays:''};
+let evoSort={col:'titre',asc:true}, evoPage=1, EVO_PER_PAGE=20;
+const SEUIL='2024-01-01';
+
+// Pays UE
+const PAYS_UE=new Set(['ALLEMAGNE','AUTRICHE','BELGIQUE','BULGARIE','CHYPRE','CROATIE','DANEMARK','ESPAGNE','ESTONIE','FINLANDE','GRECE','HONGRIE','IRLANDE','ITALIE','ITALY','LETTONIE','LITUANIE','LUXEMBOURG','MALTE','PAYS BAS','PAYS-BAS','POLOGNE','PORTUGAL','REPUBLIQUE TCHEQUE','ROUMANIE','SLOVAQUIE','SLOVENIE','SUEDE','NETHERLANDS','GERMANY','BELGIUM','SPAIN']);
+const PAYS_INVALIDE=/^(ETAT\s|REF\s|ACTE\s|IMM\/|LOC\.|DEBITEUR|KARM|\d{5,}|\d{2}\/\d{2}\/)/i;
+function zonePaysFn(pays){
+  const p=(pays||'').toUpperCase().trim();
+  if(!p)return'france';
+  if(PAYS_INVALIDE.test(p))return'france';
+  if(p.startsWith('FRANCE'))return'france';
+  if(p==='ANGLETERRE'||p==='ROYAUME-UNI'||p==='UK')return'hors-ue';
+  if(PAYS_UE.has(p))return'ue';
+  return'hors-ue';
+}
+
+function sommeil(c){return c.en_sommeil===true}
+
+// ══ QUALITÉ ══════════════════════════════════════════════
+function qualite(c){
+  const e=EDITS[c.num_CT]||{};
+  const nom=e.nom_client||c.nom_client;
+  const siret=e.siret||c.siret;
+  const email=e.email||c.email;
+  const tel=e.telephone||c.telephone;
+  const tva=e.tva||c.tva;
+  const adr=e.adresse||c.adresse;
+  const ville=c.ville;
+
+  let score=0,items=[];
+  if(nom){score+=15;items.push({k:'Nom',ok:true})}
+  else items.push({k:'Nom',ok:false,warn:false});
+  if(siret&&siret.replace(/[\s.]/g,'').length>=14){score+=20;items.push({k:'SIRET',ok:true})}
+  else if(siret){items.push({k:'SIRET',ok:false,warn:true})}
+  else items.push({k:'SIRET',ok:false,warn:false});
+  if(email&&email.includes('@')){score+=20;items.push({k:'Email',ok:true})}
+  else items.push({k:'Email',ok:false,warn:false});
+  if(tel&&tel.trim().length>=8){score+=15;items.push({k:'Tél',ok:true})}
+  else items.push({k:'Tél',ok:false,warn:false});
+  if(tva){score+=15;items.push({k:'TVA',ok:true})}
+  else items.push({k:'TVA',ok:false,warn:false});
+  if(adr&&ville){score+=15;items.push({k:'Adresse',ok:true})}
+  else items.push({k:'Adresse',ok:false,warn:!!adr||!!ville});
+  return{score,items,label:score>=80?'Complet':score>=40?'Partiel':'Incomplet'};
+}
+
+function qualiteClass(score){return score>=80?'q-high':score>=40?'q-mid':'q-low'}
+function alerteClass(score){return score>=80?'alert-ok':score>=60?'alert-warn':'alert-err'}
+
+// ══ SUIVI ════════════════════════════════════════════════
+function loadSuivi(){SUIVI=JSON.parse(localStorage.getItem('fr_suivi')||'{}')}
+function saveSuivi(){localStorage.setItem('fr_suivi',JSON.stringify(SUIVI))}
+function toggleSuivi(id,type,btn){
+  if(!SUIVI[id])SUIVI[id]={};
+  SUIVI[id][type]=!SUIVI[id][type];
+  saveSuivi();
+  const map={traite:'t',contacte:'c',relancer:'r'};
+  btn.className='suivi-btn'+(SUIVI[id][type]?' '+map[type]:'');
+  btn.querySelector('.sb-box').textContent=SUIVI[id][type]?'✓':'';
+  renderSidebar();
+}
+
+// ══ ÉDITIONS LOCALES ══════════════════════════════════════
+function loadEdits(){EDITS=JSON.parse(localStorage.getItem('fr_edits')||'{}')}
+function saveEdits(){localStorage.setItem('fr_edits',JSON.stringify(EDITS))}
+
+let editCurrentId=null;
+function openEdit(id){
+  editCurrentId=id;
+  const c=ALL.find(x=>x.num_CT===id);
+  const e=EDITS[id]||{};
+  const fields=[
+    {k:'nom_client',l:'Nom société'},{k:'telephone',l:'Téléphone'},
+    {k:'email',l:'Email'},{k:'siret',l:'SIRET'},
+    {k:'tva',l:'TVA'},{k:'adresse',l:'Adresse'},
+    {k:'ville',l:'Ville'},{k:'code_postal',l:'Code postal'},
+    {k:'pays',l:'Pays'},{k:'contact',l:'Contact'},
+    {k:'site',l:'Site web'}
+  ];
+  document.getElementById('edit-title').textContent='Modifier — '+(e.nom_client||c.nom_client||id);
+  document.getElementById('edit-fields').innerHTML=fields.map(f=>`
+    <div class="edit-field">
+      <label>${f.l}</label>
+      <input id="ef-${f.k}" value="${escH(e[f.k]??c[f.k]??'')}">
+    </div>
+  `).join('');
+  document.getElementById('edit-modal').classList.add('open');
+}
+function closeEdit(){document.getElementById('edit-modal').classList.remove('open');editCurrentId=null}
+function saveEdit(){
+  if(!editCurrentId)return;
+  if(!EDITS[editCurrentId])EDITS[editCurrentId]={};
+  ['nom_client','telephone','email','siret','tva','adresse','ville','code_postal','pays','contact','site'].forEach(k=>{
+    const v=document.getElementById('ef-'+k)?.value||'';
+    EDITS[editCurrentId][k]=v;
+  });
+  if(!EDITS[editCurrentId]._history)EDITS[editCurrentId]._history=[];
+  EDITS[editCurrentId]._history.push({date:new Date().toISOString().slice(0,16),by:'Utilisateur'});
+  saveEdits();
+  closeEdit();
+  if(selectedId===editCurrentId)showFiche(selectedId);
+  renderSidebar();
+}
+
+// ══ CHARGEMENT ════════════════════════════════════════════
+async function init(){
+  try{
+    const r=await fetch('data.json');
+    if(!r.ok)throw new Error();
+    const data=await r.json();
+    ALL=data.clients;
+    document.getElementById('meta-n').textContent=ALL.length.toLocaleString('fr');
+    document.getElementById('meta-date').textContent=data.stats.date_generation;
+
+    const titres=new Set(),prestas=new Set();
+    ALL.forEach(c=>{
+      (c.affaires||[]).forEach(a=>a.titre&&titres.add(a.titre));
+      (c.emballants||[]).forEach(e=>e.type&&prestas.add(e.type));
+    });
+    const st=document.getElementById('fp-titre');
+    [...titres].sort().forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;st.appendChild(o)});
+    const sp=document.getElementById('fp-presta');
+    [...prestas].sort().forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;sp.appendChild(o)});
+
+    loadSuivi();loadEdits();
+    document.getElementById('loading').style.display='none';
+    renderSidebar();
+    renderStats();
+  }catch(e){
+    document.getElementById('loading').innerHTML=`<p style="color:#b91c1c;font-family:monospace">❌ Impossible de charger data.json<br><span style="font-size:11px;color:#71717a">Lance d'abord generer.py</span></p>`;
+  }
+}
+
+// ══ SIDEBAR ══════════════════════════════════════════════
+function getFiltered(){
+  const q=(document.getElementById('sidebar-search')?.value||'').toLowerCase();
+  const{titre,presta,statut,qualite:qf,manquant,dateFrom,dateTo,pays}=filterState;
+  let list=ALL;
+  if(q)list=list.filter(c=>{
+    const e=EDITS[c.num_CT]||{};
+    return (e.nom_client||c.nom_client||'').toLowerCase().includes(q)||
+      c.num_CT.toLowerCase().includes(q)||
+      (e.email||c.email||'').toLowerCase().includes(q)||
+      (e.siret||c.siret||'').includes(q)||
+      (c.ville||'').toLowerCase().includes(q)||
+      (c.affaires||[]).some(a=>a.titre.toLowerCase().includes(q));
+  });
+  if(sfFilter==='actif'||statut==='actif')list=list.filter(c=>!sommeil(c));
+  if(sfFilter==='sommeil'||statut==='sommeil')list=list.filter(c=>sommeil(c));
+  if(sfFilter==='ca'||statut==='avec-ca')list=list.filter(c=>c.ca_total>0);
+  if(sfFilter==='doublon')list=list.filter(c=>c.nb_doublons>1);
+  if(sfFilter==='anomalie')list=list.filter(c=>detectAnomalie(c).length>0);
+  const supprimes=JSON.parse(localStorage.getItem('fr_supprimes')||'[]');
+  list=list.filter(c=>!supprimes.includes(c.num_CT));
+  const masques=JSON.parse(localStorage.getItem('fr_masques')||'[]');
+  if(sfFilter!=='anomalie')list=list.filter(c=>!masques.includes(c.num_CT));
+
+  return [...list].sort((a,b)=>{
+    if(sfFilter==='actif'||statut==='actif'){
+      const qa=qualite(a).score, qb=qualite(b).score;
+      if(qa!==qb) return qb-qa;
+    }
+    return (EDITS[a.num_CT]?.nom_client||a.nom_client||'').localeCompare(EDITS[b.num_CT]?.nom_client||b.nom_client||'','fr');
+  });
+  if(titre)list=list.filter(c=>(c.affaires||[]).some(a=>a.titre===titre));
+  if(presta)list=list.filter(c=>(c.emballants||[]).some(e=>e.type===presta));
+  if(qf){list=list.filter(c=>{const q2=qualite(c);if(qf==='complet')return q2.score>=80;if(qf==='partiel')return q2.score>=40&&q2.score<80;return q2.score<40})}
+  if(manquant==='sans-email')list=list.filter(c=>{const e2=EDITS[c.num_CT]||{};return !(e2.email||c.email)});
+  if(manquant==='sans-tel')list=list.filter(c=>{const e2=EDITS[c.num_CT]||{};return !(e2.telephone||c.telephone)});
+  if(manquant==='sans-siret')list=list.filter(c=>{const e2=EDITS[c.num_CT]||{};return !(e2.siret||c.siret)});
+  if(manquant==='sans-tva')list=list.filter(c=>{const e2=EDITS[c.num_CT]||{};return !(e2.tva||c.tva)});
+  if(dateFrom)list=list.filter(c=>c.date_derniere&&c.date_derniere>=dateFrom);
+  if(dateTo)list=list.filter(c=>c.date_premiere&&c.date_premiere<=dateTo);
+  if(pays)list=list.filter(c=>zonePaysFn(c.pays)===pays);
+  return list.sort((a,b)=>(EDITS[a.num_CT]?.nom_client||a.nom_client).localeCompare(EDITS[b.num_CT]?.nom_client||b.nom_client,'fr'));
+}
+
+function renderSidebar(){
+  const list=getFiltered();
+  document.getElementById('sb-count').textContent=list.length.toLocaleString('fr');
+  document.getElementById('sidebar-list').innerHTML=list.map(c=>{
+    const sv=SUIVI[c.num_CT]||{};
+    const s=sommeil(c);
+    const e=EDITS[c.num_CT]||{};
+    const nom=e.nom_client||c.nom_client||'';
+    const nomAffiche=nom&&nom!==c.num_CT&&nom.trim()!='.'&&nom.trim()!='-'?nom:'[Nom manquant]';
+    const nomInvalide=nomAffiche==='[Nom manquant]';
+    const q2=qualite(c);
+    const qDot=q2.score>=80?'#22c55e':q2.score>=40?'#f59e0b':'#ef4444';
+    const anomCount=detectAnomalie(c).length;
+    const masques=JSON.parse(localStorage.getItem('fr_masques')||'[]');
+    const estMasque=masques.includes(c.num_CT);
+    const arrowColor=estMasque?'#a1a1aa':s?'#f87171':anomCount>0?'#fbbf24':'#60a5fa';
+
+    return `<div class="client-row${c.num_CT===selectedId?' selected':''}${s?' sommeil':''}${estMasque?' masque':''}"
+      onclick="selectClient('${esc(c.num_CT)}')"
+      style="${estMasque?'opacity:.4;':''}">
+      <span style="font-size:10px;color:${arrowColor};flex-shrink:0;margin-top:2px">▶</span>
+      <div style="min-width:0;flex:1">
+        <div style="display:flex;align-items:center;gap:5px">
+          <span style="font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:${nomInvalide?'#a1a1aa':s?'#a1a1aa':'#18181b'};font-style:${nomInvalide?'italic':'normal'}">${escH(nomAffiche)}</span>
+          <span style="width:5px;height:5px;border-radius:50%;background:${qDot};flex-shrink:0" title="Qualité ${q2.score}%"></span>
+        </div>
+        <div style="font-size:10px;color:#71717a;margin-top:1px;font-family:'JetBrains Mono',monospace">${escH(c.num_CT)}${c.ville?' · '+escH(c.ville):''}</div>
+        <div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:3px">
+          ${c.ca_total?`<span style="background:#f0fdf4;color:#15803d;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;border:1px solid #bbf7d0">${c.ca_total.toLocaleString('fr',{maximumFractionDigits:0})} €</span>`:''}
+          ${s?`<span style="background:#fef2f2;color:#b91c1c;padding:1px 5px;border-radius:4px;font-size:9px;border:1px solid #fecaca">Sommeil</span>`:''}
+          ${anomCount>0?`<span style="background:#fff7ed;color:#c2410c;padding:1px 5px;border-radius:4px;font-size:9px;border:1px solid #fed7aa">⚠ Anomalie</span>`:''}
+          ${estMasque?`<span style="background:#f4f4f5;color:#71717a;padding:1px 5px;border-radius:4px;font-size:9px;border:1px solid #e4e4e7">⏳ En attente</span>`:''}
+          ${sv.traite?`<span style="background:#f0fdf4;color:#15803d;padding:1px 5px;border-radius:4px;font-size:9px;border:1px solid #bbf7d0">✓</span>`:''}
+          ${sv.contacte?`<span style="background:#eff6ff;color:#1d4ed8;padding:1px 5px;border-radius:4px;font-size:9px;border:1px solid #bfdbfe">✉</span>`:''}
+          ${sv.relancer?`<span style="background:#fef2f2;color:#b91c1c;padding:1px 5px;border-radius:4px;font-size:9px;border:1px solid #fecaca">⚡</span>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setSF(btn,val){
+  document.querySelectorAll('.sf-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');sfFilter=val;renderSidebar();
+}
+
+// ══ SÉLECTION CLIENT ══════════════════════════════════════
+function selectClient(id){
+  selectedId=id;renderSidebar();
+  document.getElementById('empty').style.display='none';
+  document.getElementById('tab-fiche').style.display='';
+  document.getElementById('tab-evolution').style.display='none';
+  document.getElementById('tab-stats').style.display='none';
+  switchTab(currentTab);
+  autoCompleteClient(id);
+}
+
+// ══ COMPLÉTION AUTOMATIQUE INSEE ══════════════════════════
+const AUTOCACHE_KEY='fr_autocache';
+let autoCache=JSON.parse(localStorage.getItem(AUTOCACHE_KEY)||'{}');
+
+async function autoCompleteClient(id){
+  const c=ALL.find(x=>x.num_CT===id);
+  if(!c)return;
+  const e=EDITS[id]||{};
+  const nom=e.nom_client||c.nom_client||'';
+  const siretActuel=e.siret||c.siret||'';
+  const tvaActuelle=e.tva||c.tva||'';
+  const adrActuelle=e.adresse||c.adresse||'';
+  const telActuel=e.telephone||c.telephone||'';
+
+  const infosManquantes = !siretActuel || !tvaActuelle || !adrActuelle || !telActuel;
+  const cachedRecent = autoCache[id] && (Date.now()-autoCache[id].ts)<86400000*7;
+  if(!infosManquantes && cachedRecent) return;
+
+  const indicator=document.getElementById(`insee-indicator-${id}`);
+  if(indicator){indicator.style.display='flex';indicator.textContent='🔄 Recherche INSEE en cours…';}
+
+  let inseeData=null;
+  try{
+    if(siretActuel){
+      const s=siretActuel.replace(/[\s.]/g,'');
+      if(s.length>=9) inseeData=await fetchINSEEbySIREN(s.slice(0,9));
+    }
+    if(!inseeData && nom && nom.length>3 && !/^\d+$/.test(nom)){
+      inseeData=await fetchINSEEbyNom(nom, c.ville||'');
+    }
+  }catch(err){
+    if(indicator){indicator.textContent='⚠️ INSEE indisponible';setTimeout(()=>{if(indicator)indicator.style.display='none'},3000);}
+    return;
+  }
+
+  if(indicator) indicator.style.display='none';
+
+  if(!inseeData){
+    autoCache[id]={ts:Date.now(),data:null};
+    localStorage.setItem(AUTOCACHE_KEY,JSON.stringify(autoCache));
+    return;
+  }
+
+  let changed=false;
+  if(!EDITS[id])EDITS[id]={};
+
+  const siretINSEE=inseeData.siret||'';
+  const siren=inseeData.siren||siretINSEE.slice(0,9)||'';
+
+  if(siretINSEE&&!siretActuel){EDITS[id].siret=siretINSEE;changed=true;}
+  else if(siretINSEE&&siretActuel&&siretActuel.replace(/[\s.]/g,'')!==siretINSEE.replace(/[\s.]/g,'')){EDITS[id].siret=siretINSEE;changed=true;}
+
+  if(siren&&!tvaActuelle){
+    const key=(12+3*(parseInt(siren)%97))%97;
+    EDITS[id].tva=`FR${String(key).padStart(2,'0')}${siren}`;
+    changed=true;
+  }
+
+  if(inseeData.adresse&&!adrActuelle){EDITS[id].adresse=inseeData.adresse;changed=true;}
+  if(inseeData.cp&&!(e.code_postal||c.code_postal)){EDITS[id].code_postal=inseeData.cp;changed=true;}
+  if(inseeData.ville&&!c.ville){EDITS[id].ville=inseeData.ville;changed=true;}
+  if(inseeData.nom&&/^\d+$/.test(nom)){EDITS[id].nom_client=inseeData.nom;changed=true;}
+
+  EDITS[id].statut_insee=inseeData.statut||'';
+  EDITS[id].naf=inseeData.naf||'';
+
+  if(changed||!cachedRecent){
+    if(!EDITS[id]._history)EDITS[id]._history=[];
+    if(changed) EDITS[id]._history.push({date:new Date().toISOString().slice(0,16),by:'Auto INSEE'});
+    autoCache[id]={ts:Date.now(),data:inseeData};
+    localStorage.setItem(AUTOCACHE_KEY,JSON.stringify(autoCache));
+    saveEdits();
+    if(selectedId===id&&currentTab==='fiche') showFiche(id);
+    renderSidebar();
+  }
+}
+
+async function fetchINSEEbySIREN(siren){
+  const r=await fetch(`https://recherche-entreprises.api.gouv.fr/search?q=${siren}&page=1&per_page=1`);
+  const d=await r.json();
+  if(!d.results?.length)return null;
+  return parseINSEE(d.results[0]);
+}
+
+async function fetchINSEEbyNom(nom, ville){
+  const q=encodeURIComponent(nom+(ville?' '+ville:''));
+  const r=await fetch(`https://recherche-entreprises.api.gouv.fr/search?q=${q}&page=1&per_page=1`);
+  const d=await r.json();
+  if(!d.results?.length)return null;
+  const res=d.results[0];
+  const nomINSEE=(res.nom_complet||res.nom_raison_sociale||'').toUpperCase();
+  const nomSearch=nom.toUpperCase().replace(/[^A-Z0-9\s]/g,'');
+  const mots=nomSearch.split(/\s+/).filter(m=>m.length>3);
+  const match=mots.length===0||mots.some(m=>nomINSEE.includes(m));
+  if(!match)return null;
+  return parseINSEE(res);
+}
+
+function parseINSEE(ent){
+  return{
+    siren:    ent.siren||'',
+    siret:    ent.siege?.siret||'',
+    nom:      ent.nom_complet||ent.nom_raison_sociale||'',
+    adresse:  ent.siege?.adresse||ent.siege?.libelle_voie||'',
+    cp:       ent.siege?.code_postal||'',
+    ville:    ent.siege?.libelle_commune||'',
+    naf:      ent.activite_principale||'',
+    statut:   ent.etat_administratif==='A'?'Actif':'Fermé',
+  };
+}
+
+function switchTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  if(tab==='stats'){
+    document.getElementById('empty').style.display='none';
+    document.getElementById('tab-fiche').style.display='none';
+    document.getElementById('tab-evolution').style.display='none';
+    document.getElementById('tab-stats').style.display='block';
+    renderStats();return;
+  }
+  if(!selectedId){
+    document.getElementById('empty').style.display='flex';
+    document.getElementById('tab-fiche').style.display='none';
+    document.getElementById('tab-evolution').style.display='none';
+    return;
+  }
+  document.getElementById('empty').style.display='none';
+  document.getElementById('tab-fiche').style.display=tab==='fiche'?'block':'none';
+  document.getElementById('tab-evolution').style.display=tab==='evolution'?'block':'none';
+  if(tab==='fiche')showFiche(selectedId);
+  if(tab==='evolution')showEvolution(selectedId);
+}
+
+// ══ FICHE CLIENT ══════════════════════════════════════════
+function showFiche(id){
+  const c=ALL.find(x=>x.num_CT===id);
+  if(!c)return;
+  const e=EDITS[id]||{};
+  const sv=SUIVI[id]||{};
+  const s=sommeil(c);
+  const q=qualite(c);
+  const nom=e.nom_client||c.nom_client;
+
+  let h='';
+  const statutINSEE=e.statut_insee||'';
+  const nafINSEE=e.naf||'';
+  const autoFilled=e._history&&e._history.some(h=>h.by==='Auto INSEE');
+  h+=`<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px">
+    <div>
+      <div class="fiche-nom">${escH(nom)}</div>
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-top:6px">
+        <span style="background:#f4f4f5;padding:2px 8px;border-radius:6px;font-size:11px;font-family:'JetBrains Mono',monospace;color:#52525b;border:1px solid #e4e4e7">${escH(id)}</span>
+        ${c.nb_doublons>1?`<span class="pill pill-amber">⚠ ${c.nb_doublons} entrées fusionnées</span>`:''}
+        ${statutINSEE?`<span class="pill ${statutINSEE==='Actif'?'pill-green':'pill-red'}">${statutINSEE==='Actif'?'✅ Actif INSEE':'❌ Fermé INSEE'}</span>`:''}
+        ${nafINSEE?`<span class="pill pill-zinc">NAF ${escH(nafINSEE)}</span>`:''}
+        ${autoFilled?`<span class="pill pill-blue">✨ Complété auto INSEE</span>`:''}
+        <span id="insee-indicator-${esc(id)}" style="display:none;" class="pill pill-amber">🔄 Recherche INSEE…</span>
+      </div>
+      <div style="margin-top:8px">
+        ${s?`<span class="sommeil-alert">⚠️ En sommeil — dernière facture avant le 01/01/2024</span>`:
+            c.ca_total===0?`<span style="display:inline-flex;align-items:center;gap:5px;background:#f4f4f5;color:#71717a;border:1px solid #e4e4e7;border-radius:6px;padding:4px 10px;font-size:11px">ℹ️ Aucun CA enregistré</span>`:''}
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-start">
+      ${c.ca_total?`<div class="kpi-card" style="text-align:right;min-width:140px">
+        <div class="kpi-label">CA Total HT</div>
+        <div class="kpi-value" style="font-family:'JetBrains Mono',monospace;font-size:1.25rem;color:#1d4ed8">${c.ca_total.toLocaleString('fr',{minimumFractionDigits:2})} €</div>
+      </div>`:''}
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button class="action-btn" onclick="openEdit('${esc(id)}')">✏️ Modifier</button>
+        <button class="action-btn" id="btn-verif-${esc(id)}" onclick="verifierClientAuto('${esc(id)}')" style="font-size:11px">🔍 Vérifier INSEE</button>
+      </div>
+    </div>
+  </div>`;
+
+  // Bloc anomalies
+  const anomalies=detectAnomalie(c);
+  const masques=JSON.parse(localStorage.getItem('fr_masques')||'[]');
+  const estMasque=masques.includes(id);
+  if(anomalies.length>0||estMasque){
+    h+=`<div style="background:${estMasque?'#f4f4f5':'#fef2f2'};border:1px solid ${estMasque?'#e4e4e7':'#fecaca'};border-radius:10px;padding:12px 16px;margin-bottom:12px">
+      <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:600;color:${estMasque?'#52525b':'#b91c1c'};margin-bottom:6px">
+            ${estMasque?'⏳ En attente de suppression':'⚠️ Anomalies détectées'}
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px">
+            ${anomalies.map(r=>`<span class="pill pill-red">${escH(r)}</span>`).join('')}
+            ${estMasque?`<span class="pill pill-zinc">Masqué de la liste principale</span>`:''}
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          ${estMasque?`
+            <button onclick="restaurerClient('${esc(id)}')" class="action-btn">↩ Restaurer</button>
+            <button onclick="supprimerClient('${esc(id)}')" class="action-btn danger">🗑 Supprimer</button>
+          `:`
+            <button onclick="masquerClient('${esc(id)}')" class="action-btn" style="border-color:#fecaca;color:#b91c1c;background:#fef2f2">⏳ Mettre en attente</button>
+            <button onclick="supprimerClient('${esc(id)}')" class="action-btn danger">🗑 Supprimer</button>
+          `}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Score qualité
+  const qColor=q.score>=80?'#15803d':q.score>=40?'#92400e':'#b91c1c';
+  const qBg=q.score>=80?'#f0fdf4':q.score>=40?'#fffbeb':'#fef2f2';
+  const qBorder=q.score>=80?'#bbf7d0':q.score>=40?'#fde68a':'#fecaca';
+  h+=`<div style="display:flex;align-items:center;gap:14px;background:${qBg};border:1px solid ${qBorder};border-radius:0.75rem;padding:12px 16px;margin-bottom:14px">
+    <div style="font-size:26px;font-weight:700;font-family:'JetBrains Mono',monospace;color:${qColor};min-width:56px">${q.score}%</div>
+    <div style="border-left:2px solid ${qBorder};padding-left:14px;flex:1">
+      <div style="font-size:13px;font-weight:600;color:${qColor}">${q.score>=80?'✅ Données complètes':q.score>=40?'⚠️ Données partielles':'❌ Données insuffisantes'}</div>
+      <div style="font-size:11px;color:#71717a;margin-top:2px">Score de qualité des données client</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      ${q.items.map(i=>`<span class="pill ${i.ok?'pill-green':i.warn?'pill-amber':'pill-red'}">${i.ok?'✅':i.warn?'⚠️':'❌'} ${i.k}</span>`).join('')}
+    </div>
+  </div>`;
+
+  // Infos
+  const adr=[e.adresse||c.adresse,c.complement,e.code_postal||c.code_postal,e.ville||c.ville,e.pays||c.pays].filter(Boolean).join(' · ');
+  const emailVal=e.email||c.email||'';
+  const telVal=e.telephone||c.telephone||'';
+  const siretVal=e.siret||c.siret||'';
+  const tvaVal=e.tva||c.tva||'';
+
+  const hist=e._history||[];
+  const lastAuto=hist.filter(h=>h.by==='Auto INSEE').slice(-1)[0];
+  const lastManuel=hist.filter(h=>h.by==='Utilisateur').slice(-1)[0];
+  const srcAuto=lastAuto?`<span class="pill pill-green" style="font-size:9px;padding:1px 5px">✨ ISBN le ${lastAuto.date}</span>`:'';
+  const srcManuel=lastManuel?`<span class="pill pill-blue" style="font-size:9px;padding:1px 5px">✏ Modifié le ${lastManuel.date}</span>`:'';
+  const srcBadge=srcManuel||srcAuto;
+
+  h+=`<div class="info-grid">
+    <div class="info-card half"><div class="ic-label">🏠 Adresse ${srcBadge}</div><div class="ic-value">${escH(adr||'—')}</div></div>
+    <div class="info-card">
+      <div class="ic-label">📞 Téléphone${!telVal?' <span style="color:#b91c1c;font-size:9px">❌</span>':''}</div>
+      <div class="ic-value mono">${telVal?`<a href="tel:${escH(telVal)}">${escH(telVal)}</a>`:'—'}</div>
+    </div>
+    <div class="info-card full">
+      <div class="ic-label">✉️ Email${!emailVal?' <span style="color:#b91c1c;font-size:9px">❌</span>':''}</div>
+      <div class="ic-value">${emailVal?emailVal.split(/[;,\s]+/).filter(x=>x.includes('@')).map(x=>`<a href="mailto:${escH(x.trim())}">${escH(x.trim())}</a>`).join(' · '):'—'}</div>
+    </div>
+    ${c.contact?`<div class="info-card"><div class="ic-label">👤 Contact</div><div class="ic-value">${escH(c.contact)}</div></div>`:''}
+    ${c.site?`<div class="info-card"><div class="ic-label">🌐 Site web</div><div class="ic-value"><a href="${escH(c.site.startsWith('http')?c.site:'https://'+c.site)}" target="_blank">${escH(c.site)}</a></div></div>`:''}
+    <div class="info-card">
+      <div class="ic-label">🏢 SIRET${!siretVal?' <span style="color:#b91c1c;font-size:9px">❌</span>':''} ${siretVal&&srcBadge?srcBadge:''}</div>
+      <div class="ic-value mono">${escH(siretVal||'—')}</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-label">🔢 SIREN</div>
+      <div class="ic-value mono">${escH(c.siren||'—')}</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-label">💶 TVA Intracom.${!tvaVal?' <span style="color:#c2410c;font-size:9px">⚠</span>':''}</div>
+      <div class="ic-value mono blue">${escH(tvaVal||'—')}</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-label">📅 Période CA</div>
+      <div class="ic-value mono">${c.date_premiere?`${c.date_premiere} → ${c.date_derniere}`:'—'}</div>
+    </div>
+    ${c.iban?`<div class="info-card half"><div class="ic-label">🏦 IBAN</div><div class="ic-value mono" style="font-size:11px">${escH(c.iban)}</div></div>`:''}
+    ${c.bic?`<div class="info-card"><div class="ic-label">🏦 BIC</div><div class="ic-value mono">${escH(c.bic)}</div></div>`:''}
+  </div>`;
+
+  // Vérification automatique
+  const verifs=[];
+  if(emailVal){
+    const firstEmail=emailVal.split(/[;,\s]+/).find(x=>x.includes('@'))||'';
+    if(firstEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(firstEmail.trim()))
+      verifs.push({t:'err',m:'Format email invalide: '+firstEmail.trim()});
+  }else verifs.push({t:'warn',m:'Email manquant — client introuvable par email'});
+  if(telVal){
+    const tc=telVal.replace(/[\s.\-()]/g,'');
+    if(tc.length<8||tc.length>15) verifs.push({t:'err',m:'Numéro de téléphone invalide: '+telVal});
+  }else verifs.push({t:'warn',m:'Téléphone manquant'});
+  if(siretVal){
+    const sd=siretVal.replace(/[\s.]/g,'');
+    if(sd.length!==14||!/^\d+$/.test(sd)) verifs.push({t:'err',m:'SIRET invalide (doit avoir 14 chiffres): '+siretVal});
+  }else verifs.push({t:'warn',m:'SIRET manquant'+(c.siren?' — SIREN disponible':' — aucun identifiant')});
+  if(!tvaVal&&c.siren) verifs.push({t:'warn',m:'TVA manquante — peut être calculée depuis le SIREN'});
+  if(tvaVal&&!/^FR\d{11}$/.test(tvaVal.replace(/[\s.]/g,''))) verifs.push({t:'warn',m:'Format TVA inhabituel: '+tvaVal});
+  if(!c.adresse&&!c.ville) verifs.push({t:'warn',m:'Adresse incomplète'});
+  if(emailVal&&(emailVal.includes(';')||emailVal.includes(',')))
+    verifs.push({t:'info',m:'Plusieurs emails: '+(emailVal.split(/[;,\s]+/).filter(x=>x.includes('@')).length)+' adresses détectées'});
+
+  h+=`<div class="section" style="margin-bottom:14px">
+    <div class="section-head">
+      <div class="section-title">🔍 Vérification automatique</div>
+      <span class="pill ${verifs.filter(v=>v.t==='err').length>0?'pill-red':verifs.filter(v=>v.t==='warn').length>0?'pill-amber':'pill-green'}">
+        ${verifs.filter(v=>v.t==='err').length>0?'❌':verifs.filter(v=>v.t==='warn').length>0?'⚠️':'✅'}
+        ${verifs.length===0?'Données valides':verifs.length+' alerte'+(verifs.length>1?'s':'')}
+      </span>
+    </div>
+    ${verifs.length===0?
+      `<div style="padding:10px 14px;display:flex;align-items:center;gap:8px;color:#15803d;font-size:12px;font-weight:500">
+        ✅ Toutes les données sont valides et complètes
+      </div>`:
+      `<div style="padding:10px 14px;display:flex;flex-direction:column;gap:6px">
+        ${verifs.map(v=>`
+          <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;
+            background:${v.t==='err'?'#fef2f2':v.t==='warn'?'#fff7ed':'#eff6ff'};
+            border:1px solid ${v.t==='err'?'#fecaca':v.t==='warn'?'#fed7aa':'#bfdbfe'}">
+            <span>${v.t==='err'?'❌':v.t==='warn'?'⚠️':'ℹ️'}</span>
+            <span style="font-size:12px;color:${v.t==='err'?'#b91c1c':v.t==='warn'?'#c2410c':'#1d4ed8'};flex:1">${escH(v.m)}</span>
+            ${v.m.includes('manquant')||v.m.includes('invalide')?
+              `<button onclick="openEdit('${esc(id)}')" class="action-btn" style="font-size:11px;padding:2px 8px">✏️ Corriger</button>`:''}
+          </div>`).join('')}
+      </div>`}
+  </div>`;
+
+  // Affaires
+  const aff=c.affaires||[];
+  h+=`<div class="section"><div class="section-head"><div class="section-title">📋 Affaires / Titres CA</div><span class="section-pill">${aff.length}</span></div>`;
+  if(aff.length){
+    h+=`<table class="evo-table"><thead><tr><th>Code</th><th>Titre</th><th>Début</th><th>Fin</th><th>Nb lignes</th><th>Montant HT</th></tr></thead><tbody>`;
+    aff.forEach(a=>h+=`<tr>
+      <td class="mono" style="color:#1d4ed8">${escH(a.code)}</td>
+      <td><a href="#" onclick="filterByTitre('${esc(a.titre)}');return false" style="color:#18181b;font-weight:500">${escH(a.titre)} <span style="color:#1d4ed8;font-size:10px">↗</span></a></td>
+      <td class="mono" style="font-size:11px;color:#71717a">${a.date_debut||'—'}</td>
+      <td class="mono" style="font-size:11px;color:#71717a">${a.date_fin||'—'}</td>
+      <td class="mono" style="color:#71717a">${a.nb}</td>
+      <td class="mono" style="font-weight:600;color:#15803d">${a.montant.toLocaleString('fr',{minimumFractionDigits:2})} €</td>
+    </tr>`);
+    h+=`</tbody></table>`;
+  }else h+=`<div style="padding:16px;text-align:center;color:#71717a;font-size:12px">Aucune affaire CA</div>`;
+  h+=`</div>`;
+
+  // Emballants
+  const emb=c.emballants||[];
+  h+=`<div class="section"><div class="section-head"><div class="section-title">📦 Emballants consommés</div><span class="section-pill">${emb.reduce((s,e2)=>s+e2.quantite,0).toLocaleString('fr')} unités</span></div>`;
+  if(emb.length){
+    h+=`<table class="evo-table"><thead><tr><th>Type prestation</th><th>Quantité</th><th>Montant HT</th><th>Période</th><th>Alerte</th></tr></thead><tbody>`;
+    emb.forEach(em=>{
+      const al=em.quantite>1000?'alert-warn':em.quantite>5000?'alert-err':'alert-ok';
+      const periode=em.date_debut?(em.date_debut===em.date_fin?em.date_debut:`${em.date_debut} → ${em.date_fin}`):'—';
+      h+=`<tr><td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${getColor(em.type)};margin-right:6px"></span>${escH(em.type)}</td>
+      <td class="mono" style="font-weight:600;color:#1d4ed8">${em.quantite.toLocaleString('fr')}</td>
+      <td class="mono">${em.montant_ht?em.montant_ht.toLocaleString('fr',{minimumFractionDigits:2})+' €':'—'}</td>
+      <td class="mono" style="font-size:11px;color:#71717a">${escH(periode)}</td>
+      <td><span class="alert-badge ${al}">${em.quantite>5000?'⚠️ Élevé':em.quantite>1000?'ℹ️ Moyen':'✅ Normal'}</span></td></tr>`;
+    });
+    h+=`</tbody></table>`;
+  }else h+=`<div style="padding:16px;text-align:center;color:#71717a;font-size:12px">Aucun emballant</div>`;
+  h+=`</div>`;
+
+  document.getElementById('tab-fiche').innerHTML=h;
+}
+
+// ══ ÉVOLUTION ════════════════════════════════════════════
+function showEvolution(id){
+  const c=ALL.find(x=>x.num_CT===id);
+  if(!c)return;
+  const hist=c.historique||{};
+  const months=Object.keys(hist).sort();
+  const e=EDITS[id]||{};
+  const nom=e.nom_client||c.nom_client;
+
+  let rows=[];
+  months.forEach(mois=>{
+    const mData=hist[mois]||{};
+    Object.entries(mData).forEach(([type,qte])=>{
+      const prevIdx=months.indexOf(mois)-1;
+      const prevMois=prevIdx>=0?months[prevIdx]:null;
+      const prevQte=prevMois?(hist[prevMois]?.[type]||0):null;
+      let evo=null;
+      if(prevQte!==null&&prevQte>0)evo=Math.round(((qte-prevQte)/prevQte)*100);
+      const alerte=qte>5000?'❌ Élevé':qte>1000?'⚠️ Attention':'✅ Normal';
+      const alerteC=qte>5000?'alert-err':qte>1000?'alert-warn':'alert-ok';
+      rows.push({mois,type,qte,evo,alerte,alerteC});
+    });
+  });
+
+  let h=`<div class="section">
+    <div class="section-head">
+      <div class="section-title">📈 Évolution des quantités — ${escH(nom)}</div>
+      <span class="section-pill">${rows.length} lignes</span>
+    </div>
+    <div class="evo-toolbar">
+      <input class="evo-search" id="evo-search" placeholder="Rechercher…" oninput="filterEvo()">
+      <select class="evo-select" id="evo-type" onchange="filterEvo()">
+        <option value="">Tous types</option>
+        ${[...new Set(rows.map(r=>r.type))].sort().map(t=>`<option value="${escH(t)}">${escH(t)}</option>`).join('')}
+      </select>
+      <select class="evo-select" id="evo-alerte" onchange="filterEvo()">
+        <option value="">Toutes alertes</option>
+        <option value="ok">✅ Normal</option>
+        <option value="warn">⚠️ Attention</option>
+        <option value="err">❌ Élevé</option>
+      </select>
+      <button class="evo-btn" onclick="exportEvoExcel()">⬇ Export</button>
+    </div>
+    <div id="evo-table-wrap">
+      ${buildEvoTable(rows)}
+    </div>
+  </div>`;
+
+  window._evoRows=rows;
+  document.getElementById('tab-evolution').innerHTML=h;
+}
+
+function buildEvoTable(rows){
+  if(!rows.length)return`<div style="padding:20px;text-align:center;color:#71717a;font-size:12px">Aucune donnée d'évolution</div>`;
+  const total=rows.length;
+  const start=(evoPage-1)*EVO_PER_PAGE;
+  const pageRows=rows.slice(start,start+EVO_PER_PAGE);
+  const totalPages=Math.ceil(total/EVO_PER_PAGE);
+
+  let h=`<table class="evo-table"><thead><tr>
+    <th onclick="sortEvo('mois')">Mois <span class="sort-icon">${evoSort.col==='mois'?(evoSort.asc?'↑':'↓'):'↕'}</span></th>
+    <th onclick="sortEvo('type')">Type prestation <span class="sort-icon">${evoSort.col==='type'?(evoSort.asc?'↑':'↓'):'↕'}</span></th>
+    <th onclick="sortEvo('qte')">Quantité <span class="sort-icon">${evoSort.col==='qte'?(evoSort.asc?'↑':'↓'):'↕'}</span></th>
+    <th onclick="sortEvo('evo')">Évolution % <span class="sort-icon">${evoSort.col==='evo'?(evoSort.asc?'↑':'↓'):'↕'}</span></th>
+    <th>Alerte</th>
+    <th>Dernière MàJ</th>
+  </tr></thead><tbody>`;
+
+  pageRows.forEach(r=>{
+    const evoTxt=r.evo===null?'—':(r.evo>0?`+${r.evo}%`:r.evo===0?'0%':`${r.evo}%`);
+    const evoCls=r.evo===null?'evo-stable':r.evo>0?'evo-up':'evo-down';
+    h+=`<tr>
+      <td class="mono">${r.mois}</td>
+      <td><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${getColor(r.type)};margin-right:5px"></span>${escH(r.type)}</td>
+      <td class="mono" style="font-weight:600">${r.qte.toLocaleString('fr')}</td>
+      <td class="mono ${evoCls}">${evoTxt}</td>
+      <td><span class="alert-badge ${r.alerteC}">${r.alerte}</span></td>
+      <td class="mono" style="color:#71717a;font-size:11px">${r.mois}</td>
+    </tr>`;
+  });
+  h+=`</tbody></table>`;
+
+  h+=`<div class="pagination"><span class="page-info">${start+1}–${Math.min(start+EVO_PER_PAGE,total)} / ${total}</span>`;
+  for(let p=1;p<=totalPages;p++)h+=`<button class="page-btn${p===evoPage?' active':''}" onclick="goPage(${p})">${p}</button>`;
+  h+=`</div>`;
+  return h;
+}
+
+function filterEvo(){
+  const q=(document.getElementById('evo-search')?.value||'').toLowerCase();
+  const t=document.getElementById('evo-type')?.value||'';
+  const al=document.getElementById('evo-alerte')?.value||'';
+  let rows=window._evoRows||[];
+  if(q)rows=rows.filter(r=>r.type.toLowerCase().includes(q)||r.mois.includes(q));
+  if(t)rows=rows.filter(r=>r.type===t);
+  if(al==='ok')rows=rows.filter(r=>r.alerteC==='alert-ok');
+  if(al==='warn')rows=rows.filter(r=>r.alerteC==='alert-warn');
+  if(al==='err')rows=rows.filter(r=>r.alerteC==='alert-err');
+  evoPage=1;
+  document.getElementById('evo-table-wrap').innerHTML=buildEvoTable(rows);
+}
+
+function sortEvo(col){
+  if(evoSort.col===col)evoSort.asc=!evoSort.asc;else{evoSort.col=col;evoSort.asc=true}
+  const rows=window._evoRows||[];
+  rows.sort((a,b)=>{
+    let va=a[col]??'',vb=b[col]??'';
+    if(typeof va==='number')return evoSort.asc?va-vb:vb-va;
+    return evoSort.asc?String(va).localeCompare(String(vb)):String(vb).localeCompare(String(va));
+  });
+  window._evoRows=rows;
+  document.getElementById('evo-table-wrap').innerHTML=buildEvoTable(rows);
+}
+
+function goPage(p){evoPage=p;document.getElementById('evo-table-wrap').innerHTML=buildEvoTable(window._evoRows||[])}
+
+// ══ STATISTIQUES GLOBALES ════════════════════════════════
+function renderStats(){
+  const nb=ALL.length;
+  const nbCa=ALL.filter(c=>c.ca_total>0).length;
+  const nbSommeil=ALL.filter(c=>sommeil(c)).length;
+  const nbSiret=ALL.filter(c=>c.siret).length;
+  const caTotal=ALL.reduce((s,c)=>s+c.ca_total,0);
+  const nbComplet=ALL.filter(c=>qualite(c).score>=80).length;
+  const nbPartiel=ALL.filter(c=>{const q=qualite(c).score;return q>=40&&q<80}).length;
+  const nbIncomplet=ALL.filter(c=>qualite(c).score<40).length;
+
+  let h=`<div class="stats-grid">
+    <div class="stat-card blue"><div class="sv">${nb.toLocaleString('fr')}</div><div class="sl">Clients total</div></div>
+    <div class="stat-card green"><div class="sv">${nbCa.toLocaleString('fr')}</div><div class="sl">Avec CA</div></div>
+    <div class="stat-card red"><div class="sv">${nbSommeil.toLocaleString('fr')}</div><div class="sl">En sommeil</div></div>
+    <div class="stat-card orange"><div class="sv">${caTotal.toLocaleString('fr',{maximumFractionDigits:0})} €</div><div class="sl">CA total HT</div></div>
+  </div>`;
+
+  h+=`<div class="section"><div class="section-head"><div class="section-title">📊 Qualité des données</div></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px">
+      <div class="kpi-card" style="text-align:center">
+        <div class="kpi-value" style="color:#15803d;font-family:'JetBrains Mono',monospace">${nbComplet}</div>
+        <div class="kpi-label" style="margin-top:4px;color:#15803d">✅ Complet (≥80%)</div>
+      </div>
+      <div class="kpi-card" style="text-align:center">
+        <div class="kpi-value" style="color:#c2410c;font-family:'JetBrains Mono',monospace">${nbPartiel}</div>
+        <div class="kpi-label" style="margin-top:4px;color:#c2410c">⚠️ Partiel (40–80%)</div>
+      </div>
+      <div class="kpi-card" style="text-align:center">
+        <div class="kpi-value" style="color:#b91c1c;font-family:'JetBrains Mono',monospace">${nbIncomplet}</div>
+        <div class="kpi-label" style="margin-top:4px;color:#b91c1c">❌ Incomplet (&lt;40%)</div>
+      </div>
+    </div>
+  </div>`;
+
+  // Stats pays
+  const nbFr=ALL.filter(c=>zonePaysFn(c.pays)==='france').length;
+  const nbUe=ALL.filter(c=>zonePaysFn(c.pays)==='ue').length;
+  const nbHorsUe=ALL.filter(c=>zonePaysFn(c.pays)==='hors-ue'&&c.pays).length;
+  h+=`<div class="section"><div class="section-head"><div class="section-title">🌍 Répartition géographique</div></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px">
+      <div class="kpi-card" style="text-align:center">
+        <div class="kpi-value" style="color:#1d4ed8;font-family:'JetBrains Mono',monospace">${nbFr}</div>
+        <div class="kpi-label" style="margin-top:4px">🇫🇷 France</div>
+      </div>
+      <div class="kpi-card" style="text-align:center">
+        <div class="kpi-value" style="color:#15803d;font-family:'JetBrains Mono',monospace">${nbUe}</div>
+        <div class="kpi-label" style="margin-top:4px">🇪🇺 Union Européenne</div>
+      </div>
+      <div class="kpi-card" style="text-align:center">
+        <div class="kpi-value" style="color:#c2410c;font-family:'JetBrains Mono',monospace">${nbHorsUe}</div>
+        <div class="kpi-label" style="margin-top:4px">🌍 Hors Union Européenne</div>
+      </div>
+    </div>
+  </div>`;
+
+  // Top 10 clients par CA
+  const top=ALL.filter(c=>c.ca_total>0).sort((a,b)=>b.ca_total-a.ca_total).slice(0,10);
+  h+=`<div class="section"><div class="section-head"><div class="section-title">🏆 Top 10 clients par CA</div></div>
+    <table class="evo-table"><thead><tr><th>#</th><th>Client</th><th>CA Total HT</th><th>Nb affaires</th><th>Statut</th></tr></thead><tbody>`;
+  top.forEach((c,i)=>{
+    const e=EDITS[c.num_CT]||{};
+    h+=`<tr onclick="selectClient('${esc(c.num_CT)}')" style="cursor:pointer">
+      <td class="mono" style="color:#71717a">${i+1}</td>
+      <td style="font-weight:500">${escH(e.nom_client||c.nom_client)}</td>
+      <td class="mono" style="font-weight:700;color:#1d4ed8">${c.ca_total.toLocaleString('fr',{minimumFractionDigits:2})} €</td>
+      <td class="mono">${c.nb_affaires}</td>
+      <td><span class="alert-badge ${sommeil(c)?'alert-err':'alert-ok'}">${sommeil(c)?'Sommeil':'Actif'}</span></td>
+    </tr>`;
+  });
+  h+=`</tbody></table></div>`;
+
+  document.getElementById('tab-stats').innerHTML=h;
+}
+
+// ══ API INSEE ════════════════════════════════════════════
+async function verifyINSEE(siren,elId){
+  const el=document.getElementById(elId);
+  if(!el)return;
+  el.style.display='block';el.innerHTML='<span style="color:#1d4ed8">🔄 Vérification en cours…</span>';
+  try{
+    const data=await fetchINSEEbySIREN(siren);
+    if(data){
+      el.innerHTML=`<strong>✅ ${escH(data.nom)}</strong><br>
+        SIRET siège: <span style="font-family:monospace">${escH(data.siret)}</span> ·
+        NAF: ${escH(data.naf)} ·
+        Adresse: ${escH(data.adresse+' '+data.cp+' '+data.ville)} ·
+        Statut: <span style="color:${data.statut==='Actif'?'#15803d':'#b91c1c'}">${data.statut==='Actif'?'✅ Active':'⚠️ Fermée'}</span>`;
+    }else el.innerHTML='❌ Entreprise non trouvée dans la base INSEE';
+  }catch{el.innerHTML='❌ Erreur de connexion à l\'API INSEE'}
+}
+
+// ══ FILTRES ══════════════════════════════════════════════
+function applyFilters(){
+  filterState.titre=document.getElementById('fp-titre').value;
+  filterState.presta=document.getElementById('fp-presta').value;
+  filterState.statut=document.getElementById('fp-statut').value;
+  filterState.qualite=document.getElementById('fp-qualite').value;
+  filterState.manquant=document.getElementById('fp-manquant').value;
+  filterState.dateFrom=document.getElementById('fp-date-from').value;
+  filterState.dateTo=document.getElementById('fp-date-to').value;
+  filterState.pays=document.getElementById('fp-pays').value;
+  renderSidebar();
+}
+
+function filterByTitre(titre){
+  document.getElementById('fp-titre').value=titre;
+  filterState.titre=titre;
+  renderSidebar();
+}
+
+function setDateShortcut(type){
+  const now=new Date();
+  let from='',to=now.toISOString().slice(0,10);
+  if(type==='today'){from=to}
+  else if(type==='week'){const d=new Date(now);d.setDate(d.getDate()-7);from=d.toISOString().slice(0,10)}
+  else if(type==='month'){const d=new Date(now);d.setMonth(d.getMonth()-1);from=d.toISOString().slice(0,10)}
+  else if(type==='year'){const d=new Date(now);d.setFullYear(d.getFullYear()-1);from=d.toISOString().slice(0,10)}
+  document.getElementById('fp-date-from').value=from;
+  document.getElementById('fp-date-to').value=to;
+  filterState.dateFrom=from;filterState.dateTo=to;
+  renderSidebar();
+}
+
+function clearFilters(){
+  ['fp-titre','fp-presta','fp-statut','fp-qualite','fp-manquant'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fp-date-from').value='';document.getElementById('fp-date-to').value='';
+  filterState={titre:'',presta:'',statut:'',qualite:'',manquant:'',dateFrom:'',dateTo:'',pays:''};
+  document.getElementById('fp-pays').value='';
+  renderSidebar();
+}
+
+function onGlobalSearch(){renderSidebar()}
+
+// ══ VÉRIFICATION AUTO PAR CLIENT ══════════════════════════
+async function verifierClientAuto(id){
+  const btn=document.getElementById(`btn-verif-${id}`);
+  if(btn){btn.textContent='⏳ Recherche…';btn.disabled=true;}
+  await autoCompleteClient(id);
+  if(btn){btn.textContent='✅ Vérifié';btn.disabled=false;setTimeout(()=>{if(btn)btn.textContent='🔍 Vérifier INSEE'},3000);}
+  showFiche(id);
+}
+let batchRunning=false;
+async function verifierTousINSEE(){
+  if(batchRunning){alert('Vérification déjà en cours…');return}
+  const total=ALL.length;
+  const prog=document.getElementById('verif-progress');
+  const btn=document.getElementById('btn-verif-all');
+  batchRunning=true;
+  if(btn){btn.textContent='⏳ En cours…';btn.disabled=true;}
+  if(prog)prog.style.display='block';
+
+  let done=0,completes=0,errors=0;
+  const BATCH=10;
+
+  for(let i=0;i<ALL.length;i++){
+    const c=ALL[i];
+    if(prog)prog.textContent=`🔍 ${done}/${total} — ${completes} complétés`;
+
+    const cached=autoCache[c.num_CT];
+    if(cached&&(Date.now()-cached.ts)<86400000*30){done++;continue}
+
+    try{await autoCompleteClient(c.num_CT);completes++;}
+    catch{errors++;}
+    done++;
+
+    if(done%BATCH===0) await new Promise(r=>setTimeout(r,1000));
+  }
+
+  batchRunning=false;
+  if(btn){btn.textContent='🔍 Vérifier tous';btn.disabled=false;}
+  if(prog){prog.textContent=`✅ Terminé — ${completes} clients complétés, ${errors} erreurs`;setTimeout(()=>{if(prog)prog.style.display='none'},5000);}
+  saveEdits();renderSidebar();
+  if(selectedId)showFiche(selectedId);
+}
+
+function exportExcel(){
+  const list=getFiltered();
+  const date=new Date().toLocaleDateString('fr-FR');
+  const heure=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+
+  let xls=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">
+<head><meta charset="UTF-8">
+<style>
+  body{font-family:Calibri,Arial,sans-serif;font-size:11pt}
+  table{border-collapse:collapse;width:100%}
+  th{background:#18181b;color:white;font-weight:bold;padding:8px 12px;text-align:left;font-size:11pt;border:1px solid #27272a}
+  td{padding:6px 12px;border:1px solid #e4e4e7;font-size:10pt;vertical-align:middle}
+  tr:nth-child(even) td{background:#fafafa}
+  tr:hover td{background:#f4f4f5}
+  .ca{color:#15803d;font-weight:bold}
+  .red{color:#b91c1c;background:#fef2f2!important}
+  .orange{color:#92400e;background:#fffbeb!important}
+  .green-cell{color:#15803d;background:#f0fdf4!important}
+  .gray{color:#71717a}
+  .title{font-size:16pt;font-weight:bold;color:#18181b;margin-bottom:4px}
+  .sub{font-size:10pt;color:#71717a;margin-bottom:16px}
+  .score-high{background:#dcfce7;color:#15803d;font-weight:bold;border-radius:3px;padding:2px 6px}
+  .score-mid{background:#fef9c3;color:#854d0e;font-weight:bold}
+  .score-low{background:#fee2e2;color:#b91c1c;font-weight:bold}
+</style></head><body>
+<p class="title">📋 Annuaire France Routage</p>
+<p class="sub">Exporté le ${date} à ${heure} — ${list.length} clients</p>
+<table>
+<thead><tr>
+  <th>N° Client</th><th>Nom société</th><th>Ville</th><th>Pays/Zone</th>
+  <th>Téléphone</th><th>Email</th><th>SIRET</th><th>TVA</th>
+  <th>CA Total HT</th><th>Nb Affaires</th><th>Titres</th>
+  <th>Qualité</th><th>Statut</th><th>Traité</th><th>Contacté</th><th>À Relancer</th>
+</tr></thead><tbody>`;
+
+  list.forEach(c=>{
+    const sv=SUIVI[c.num_CT]||{};
+    const e=EDITS[c.num_CT]||{};
+    const q=qualite(c);
+    const nom=e.nom_client||c.nom_client||'';
+    const email=e.email||c.email||'';
+    const tel=e.telephone||c.telephone||'';
+    const siret=e.siret||c.siret||'';
+    const tva=e.tva||c.tva||'';
+    const zone=zonePaysFn(c.pays);
+    const zoneLabel=zone==='france'?'🇫🇷 France':zone==='ue'?'🇪🇺 UE':'🌍 Hors UE';
+    const statut=sommeil(c)?'Sommeil':c.ca_total>0?'Actif':'Sans CA';
+    const statutClass=sommeil(c)?'red':c.ca_total>0?'green-cell':'';
+    const qClass=q.score>=80?'score-high':q.score>=40?'score-mid':'score-low';
+    const titres=(c.affaires||[]).map(a=>a.titre).join(', ');
+    const anomalie=detectAnomalie(c);
+
+    xls+=`<tr${anomalie.length>0?' style="background:#fff7ed"':''}>
+      <td class="gray" style="font-family:monospace">${c.num_CT}</td>
+      <td style="font-weight:${c.ca_total>0?'600':'400'}">${nom||'<em style="color:#a1a1aa">Manquant</em>'}</td>
+      <td>${c.ville||'—'}</td>
+      <td>${zoneLabel}</td>
+      <td style="font-family:monospace">${tel||'—'}</td>
+      <td style="color:#1d4ed8">${email||'—'}</td>
+      <td style="font-family:monospace;font-size:9pt">${siret||'—'}</td>
+      <td style="font-family:monospace;font-size:9pt;color:#7c3aed">${tva||'—'}</td>
+      <td class="ca">${c.ca_total?c.ca_total.toLocaleString('fr',{minimumFractionDigits:2})+' €':'—'}</td>
+      <td style="text-align:center">${c.nb_affaires||0}</td>
+      <td style="font-size:9pt;color:#52525b">${titres||'—'}</td>
+      <td style="text-align:center"><span class="${qClass}">${q.score}%</span></td>
+      <td class="${statutClass}" style="text-align:center;font-weight:500">${statut}</td>
+      <td style="text-align:center;background:${sv.traite?'#dcfce7':''}">${sv.traite?'✅':''}</td>
+      <td style="text-align:center;background:${sv.contacte?'#dbeafe':''}">${sv.contacte?'✅':''}</td>
+      <td style="text-align:center;background:${sv.relancer?'#fee2e2':''}">${sv.relancer?'⚡':''}</td>
+    </tr>`;
+  });
+
+  xls+=`</tbody></table></body></html>`;
+
+  const blob=new Blob(['﻿'+xls],{type:'application/vnd.ms-excel;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`annuaire_${new Date().toISOString().slice(0,10)}.xls`;
+  a.click();
+}
+
+function exportEvoExcel(){
+  const rows=window._evoRows||[];
+  const data=[['Mois','Type prestation','Quantité','Évolution %','Alerte']];
+  rows.forEach(r=>data.push([r.mois,r.type,r.qte,r.evo===null?'':r.evo+'%',r.alerte]));
+  const csv='﻿'+data.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=`evolution_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+}
+
+// ══ DÉTECTION ANOMALIES ══════════════════════════════════
+function detectAnomalie(c){
+  const raisons=[];
+  const nom=(c.nom_client||'').trim();
+  const e=EDITS[c.num_CT]||{};
+  const nomFinal=e.nom_client||nom;
+
+  if(!nomFinal||nomFinal===c.num_CT)
+    raisons.push('Nom manquant ou égal au numéro client');
+  else if(nomFinal.length<=2||/^[.\-_\/ ]+$/.test(nomFinal))
+    raisons.push('Nom invalide: "'+nomFinal+'"');
+
+  const hasInfo=e.email||c.email||e.telephone||c.telephone||e.adresse||c.adresse||e.siret||c.siret;
+  if(!hasInfo) raisons.push('Aucune information de contact');
+
+  const email=e.email||c.email||'';
+  if(email&&!email.includes('@')) raisons.push('Format email invalide');
+
+  return raisons;
+}
+
+function masquerClient(id){
+  const masques=JSON.parse(localStorage.getItem('fr_masques')||'[]');
+  if(!masques.includes(id)){masques.push(id);localStorage.setItem('fr_masques',JSON.stringify(masques));}
+  renderSidebar();
+  document.getElementById('empty').style.display='flex';
+  document.getElementById('tab-fiche').style.display='none';
+}
+
+function restaurerClient(id){
+  let masques=JSON.parse(localStorage.getItem('fr_masques')||'[]');
+  masques=masques.filter(x=>x!==id);
+  localStorage.setItem('fr_masques',JSON.stringify(masques));
+  renderSidebar();
+}
+
+function supprimerClient(id){
+  const supprimes=JSON.parse(localStorage.getItem('fr_supprimes')||'[]');
+  if(!supprimes.includes(id)){supprimes.push(id);localStorage.setItem('fr_supprimes',JSON.stringify(supprimes));}
+  let masques=JSON.parse(localStorage.getItem('fr_masques')||'[]');
+  masques=masques.filter(x=>x!==id);
+  localStorage.setItem('fr_masques',JSON.stringify(masques));
+  if(selectedId===id){
+    selectedId=null;
+    document.getElementById('empty').style.display='flex';
+    document.getElementById('tab-fiche').style.display='none';
+  }
+  renderSidebar();
+}
+
+function exportAnomalies(){
+  const masques=JSON.parse(localStorage.getItem('fr_masques')||'[]');
+  const anomalies=ALL.filter(c=>detectAnomalie(c).length>0);
+  const rows=[['Num CT','Nom','Ville','Email','Téléphone','SIRET','CA Total','Anomalies','Statut']];
+  anomalies.forEach(c=>{
+    rows.push([
+      c.num_CT,c.nom_client||'',c.ville||'',c.email||'',c.telephone||'',c.siret||'',
+      c.ca_total||0,detectAnomalie(c).join(' | '),
+      masques.includes(c.num_CT)?'En attente suppression':'À traiter'
+    ]);
+  });
+  const csv='﻿'+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=`anomalies_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+}
+
+// ══ UTILS ════════════════════════════════════════════════
+const COLORS={'ADRESSAGE':'#3b82f6','AFFRANCHISSEMENT':'#8b5cf6','ROUTAGE':'#059669','MISE SOUS FILM':'#f59e0b','MISE SOUS ENVELOPPES':'#ef4444','BROCHAGE':'#ec4899','PLIAGE':'#06b6d4','PORTAGE':'#f97316','PRESSE':'#6366f1','CONDITIONNEMENT':'#84cc16'};
+function getColor(type){const t=(type||'').toUpperCase();for(const[k,v]of Object.entries(COLORS))if(t.includes(k))return v;return'#9ca3af'}
+function escH(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function esc(s){return String(s||'').replace(/'/g,"\\'")}
+
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
